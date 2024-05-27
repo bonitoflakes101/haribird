@@ -372,49 +372,55 @@ fb19:   call wait_frame ; Wait for frame
         mov al,[frame]
         and al,7        ; 8 frames have passed?
         jnz fb17        ; No, jump
-        inc word [grav] ; Increase gravity
+        inc word [grav] ; Increase gravity  
 fb17:
-        mov al,$20
-        mov [di-160],al   ; Delete bird from screen
-        mov [di+2],al
-        stosb
+    mov al, $20
+    mov [di-160], al   ; Delete bird from screen
+    mov [di+2], al
+    stosb
 
-        xor al, al
-        mov al, [user_choice]
-        cmp al, 1              ; Compare user_choice to 1
-        je choice1             ; If equal to 1, jump to choice1
-        cmp al, 2              ; Compare user_choice to 2
-        je choice2             ; If equal to 2, jump to choice2
-        cmp al, 3              ; Compare user_choice to 3
-        je choice3             ; If equal to 3, jump to choice3
+   ; HANDLE USER INPUTS
+    xor al, al
+    mov al, [user_choice]
+    cmp al, 1              ; Compare user_choice to 1
+    je fb28                ; If equal to 1, jump to fb28
+    
+    cmp al, 2              ; Compare user_choice to 2
+    je fb29                ; If equal to 2, jump to fb29
 
-        ; If user_choice is not 1, 2, or 3, fall through and execute default choice
-        call scroll_scenery    ; Call scroll_scenery once
-        call scroll_scenery    ; Call scroll_scenery again
-        jmp end                ; Jump to end
+    cmp al, 3              ; Compare user_choice to 3
+    je fb30                ; If equal to 3, jump to fb30
 
-        choice1:
-        call scroll_scenery    ; Call scroll_scenery once
-        call scroll_scenery    ; Call scroll_scenery again
-        jmp end                ; Jump to end
+    ; If user_choice is not 1, 2, or 3, fall through and execute default choice
+    call scroll_scenery    ; Call scroll_scenery once
+    
+    jmp fb_end             ; Jump to fb_end
 
-        choice2:
-        call scroll_scenery    ; Call scroll_scenery once
-        call scroll_scenery    ; Call scroll_scenery again
-        jmp end                ; Jump to end
+fb28:
+    call scroll_scenery    ; EASY
+    call scroll_scenery    ; 
+    jmp fb_end             ; 
 
-        choice3:
-        call scroll_scenery    ; Call scroll_scenery once
-        call scroll_scenery    ; Call scroll_scenery again
-        call scroll_scenery    ; Call scroll_scenery again
-        call scroll_scenery    ; Call scroll_scenery again
+fb29:
+    call scroll_scenery    ; MED
+    call scroll_scenery    ; Call scroll_scenery again
+    call scroll_scenery
+    jmp fb_end             ; 
 
-        end:
-        ; call scroll_scenery     ; Scroll scenery
-        ; call scroll_scenery     ; Scroll scenery
-        cmp byte [0x00a0],0xb0  ; Passed a column?
-        jz fb27
-        cmp byte [0x00a2],0xb0  ; Passed a column?
+fb30:
+    call scroll_scenery    ; HARD
+    call scroll_scenery    ; 
+    call scroll_scenery    ; 
+    call scroll_scenery    ; 
+    jmp fb_end 
+
+fb_end:
+    ; call scroll_scenery     ; Scroll scenery
+    ; call scroll_scenery     ; Scroll scenery
+    cmp byte [0x00a0], 0xb0  ; Passed a column?
+    jz fb27
+    cmp byte [0x00a2], 0xb0  ; Passed a column?
+
 fb27:   jnz fb24
         inc word [score]        ; Increase score
         mov ax,[score]
