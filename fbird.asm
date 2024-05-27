@@ -14,11 +14,9 @@
         use16
 
         section .data
-         user_choice db 0  ; User choice variable
-         difficulty_times db 20, 10, 5 ; Array for difficulty (index 0 for choice 1, index 1 for choice 2, index 2 for choice 3)
-         scroll_timing db 0
-        end
-
+        user_choice db 0  ; User choice variable
+        difficulty_times db 2, 3, 4 ; Array for difficulty (index 0 for choice 1, index 1 for choice 2, index 2 for choice 3)
+        
         section .text
         mov ax,0x0002   ; Set 80x25 text mode
         int 0x10        ; Call BIOS
@@ -246,13 +244,10 @@ menu:
 
         end_input:
         ; User's input is now stored on the screen and can be processed
+        ; (Optionally store the user's input in a buffer for further processing)
         sub al, '0'     ; Convert ASCII digit to integer
         mov [user_choice], al  ; Store the user's input in the variable user_choice
-        dec al           ; Adjust for zero-based indexing
-        movzx bx, al     ; Zero-extend user choice to BX
-        mov al, [difficulty_times + bx] ; Load the timing value based on user choice
-        mov [scroll_timing], al ; Store the timing value
-        ; BIOS interrupt call
+                ; BIOS interrupt call
 
         ;; END NUNG FUNCTIONALITY FOR CAPTURING USER CHOICE OF DIFFICULTY - TRIS
 
@@ -375,7 +370,7 @@ fb20:   push cx
 
 fb19:   call wait_frame ; Wait for frame
         mov al,[frame]
-        and al,[scroll_timing]      ; 8 frames have passed?
+        and al,7        ; 8 frames have passed?
         jnz fb17        ; No, jump
         inc word [grav] ; Increase gravity
 fb17:
@@ -383,10 +378,40 @@ fb17:
         mov [di-160],al   ; Delete bird from screen
         mov [di+2],al
         stosb
-        
 
-        call scroll_scenery     ; Scroll scenery
-        call scroll_scenery     ; Scroll scenery
+        xor al, al
+        mov al, [user_choice]
+        cmp al, 1              ; Compare user_choice to 1
+        je choice1             ; If equal to 1, jump to choice1
+        cmp al, 2              ; Compare user_choice to 2
+        je choice2             ; If equal to 2, jump to choice2
+        cmp al, 3              ; Compare user_choice to 3
+        je choice3             ; If equal to 3, jump to choice3
+
+        ; If user_choice is not 1, 2, or 3, fall through and execute default choice
+        call scroll_scenery    ; Call scroll_scenery once
+        call scroll_scenery    ; Call scroll_scenery again
+        jmp end                ; Jump to end
+
+        choice1:
+        call scroll_scenery    ; Call scroll_scenery once
+        call scroll_scenery    ; Call scroll_scenery again
+        jmp end                ; Jump to end
+
+        choice2:
+        call scroll_scenery    ; Call scroll_scenery once
+        call scroll_scenery    ; Call scroll_scenery again
+        jmp end                ; Jump to end
+
+        choice3:
+        call scroll_scenery    ; Call scroll_scenery once
+        call scroll_scenery    ; Call scroll_scenery again
+        call scroll_scenery    ; Call scroll_scenery again
+        call scroll_scenery    ; Call scroll_scenery again
+
+        end:
+        ; call scroll_scenery     ; Scroll scenery
+        ; call scroll_scenery     ; Scroll scenery
         cmp byte [0x00a0],0xb0  ; Passed a column?
         jz fb27
         cmp byte [0x00a2],0xb0  ; Passed a column?
